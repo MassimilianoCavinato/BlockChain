@@ -1,25 +1,37 @@
+import * as localtunnel from 'localtunnel';
 import * as express  from 'express';
 import * as bodyParser from 'body-parser';
 import * as rp from 'request-promise';
+import { v4 as uuidv4 } from 'uuid';
 import { BlockChain } from  './blockchain';
 
 export class NetworkNode {
 
+    public id: string;
     public blockChain: BlockChain;
 
     constructor(port: number){
+
+        this.id = uuidv4();
         this.blockChain = new BlockChain();
-        this.blockChain.localNodeUrl = "http://localhost:"+port.toString();
-        const server = express();
-        server.use(bodyParser.json());
-        server.use(bodyParser.urlencoded({extended: false}));
-        server.get('/blockchain', (req, res) =>  this.getBlockChain(req, res));
-        server.post('/transaction', (req, res) => this.createTransaction(req, res));
-        server.get('/mine', (req, res) => this.mine(req, res));
-        server.post('/register-and-broadcast-node', (req, res) => this.registerAndBroadcastNode(req, res));
-        server.post('/register-node', (req, res) => this.registerNode(req, res));
-        server.post('/register-nodes-bulk', (req, res) => this.registerNodesBulk(req, res));
-        server.listen(port, () => console.log("Network Node running @", this.blockChain.localNodeUrl));
+        
+        localtunnel({port: port})
+        .then(tunnel => {
+            this.blockChain.localNodeUrl = tunnel.url;
+            const server = express();
+            server.use(bodyParser.json());
+            server.use(bodyParser.urlencoded({extended: false}));
+            server.get('/blockchain', (req, res) =>  this.getBlockChain(req, res));
+            server.post('/transaction', (req, res) => this.createTransaction(req, res));
+            server.get('/mine', (req, res) => this.mine(req, res));
+            server.post('/register-and-broadcast-node', (req, res) => this.registerAndBroadcastNode(req, res));
+            server.post('/register-node', (req, res) => this.registerNode(req, res));
+            server.post('/register-nodes-bulk', (req, res) => this.registerNodesBulk(req, res));
+            server.listen(port, () => console.log("Network Node running @", this.blockChain.localNodeUrl));
+        })
+        .catch(error => {
+            console.log("Unabelo to start network node tunnel");
+        });
     }
 
     getBlockChain(req, res){

@@ -22,8 +22,8 @@ class BlockChain {
     getLastBlock() {
         return this.chain[this.chain.length - 1];
     }
-    createNewTransaction(amount, sender, recipient) {
-        const newTransaction = new transaction_1.Transaction(amount, sender, recipient);
+    createNewTransaction(amount, sender, recipient, message) {
+        const newTransaction = new transaction_1.Transaction(amount, sender, recipient, message);
         this.pendingTransactions.push(newTransaction);
         return this.getLastBlock()['index'] + 1;
     }

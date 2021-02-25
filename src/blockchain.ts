@@ -1,6 +1,8 @@
 import { sha256 } from 'sha256';
+import { v4 as uuidv4 } from 'uuid';
 import { Block }  from './block';
 import { Transaction } from './transaction';
+
 
 export class BlockChain {
 
@@ -36,8 +38,8 @@ export class BlockChain {
         return this.chain[this.chain.length - 1];
     }
 
-    createNewTransaction(amount: number, sender: string, recipient: string) : number {
-        const newTransaction = new Transaction(amount, sender, recipient);
+    createNewTransaction(amount: number, sender: string, recipient: string, message: string) : number {
+        const newTransaction = new Transaction(amount, sender, recipient, message);
         this.pendingTransactions.push(newTransaction);
         return this.getLastBlock()['index'] + 1;
     }
